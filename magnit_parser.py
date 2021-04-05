@@ -33,7 +33,8 @@ class MagnitParse:
         for product in self._parse(self.start_url):
             self._save(product)
 
-    def _parse_date(input_str):
+    @classmethod
+    def _parse_date(cls, input_str):
         try:
             if not input_str:
                 return None
