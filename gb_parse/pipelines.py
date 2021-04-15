@@ -5,12 +5,14 @@
 
 
 # useful for handling different item types with a single interface
-from itemadapter import ItemAdapter
 
 import pymongo
 
+
 class GbParsePipeline:
+    def __init__(self):
+        self.db = pymongo.MongoClient('mongodb://localhost')['gb_data_mining']
+
     def process_item(self, item, spider):
-        collection = pymongo.MongoClient('mongodb://localhost')['gb_data_mining']['autoyoula']
-        collection.insert_one(item)
+        self.db[spider.name].insert_one(item)
         return item
