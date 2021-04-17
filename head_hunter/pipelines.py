@@ -6,8 +6,12 @@
 
 # useful for handling different item types with a single interface
 from itemadapter import ItemAdapter
-
+import pymongo
 
 class HeadHunterPipeline:
+    def __init__(self):
+        self.db = pymongo.MongoClient('mongodb://localhost')['gb_data_mining']
+
     def process_item(self, item, spider):
+        self.db[spider.name].insert_one(item)
         return item
