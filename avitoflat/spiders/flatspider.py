@@ -14,7 +14,6 @@ class FlatspiderSpider(scrapy.Spider):
         cookies = {}
         for cookie in self.raw_cookie.split('; '):
             cookies[cookie.split('=')[0]] = cookie.split('=')[-1]
-        print(cookies)
         yield scrapy.Request(
             url=self.url,
             cookies=cookies,
