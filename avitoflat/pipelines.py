@@ -6,8 +6,11 @@
 
 # useful for handling different item types with a single interface
 from itemadapter import ItemAdapter
-
+import pymongo
 
 class AvitoflatPipeline:
     def process_item(self, item, spider):
+        collection = pymongo.MongoClient('mongodb://localhost')['gb_data_mining']['avito']
+        collection.insert_one(item)
         return item
+
