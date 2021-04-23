@@ -1,5 +1,6 @@
 import json
 from datetime import datetime
+from urllib.parse import urlencode
 
 import scrapy
 
@@ -9,7 +10,7 @@ from loader import TagInstagramLoader, PostInstagramLoader
 
 class InstagramLSpider(scrapy.Spider):
     name = 'instagram_l'
-    allowed_domains = ['www.instagram.com']
+    allowed_domains = ['www.instagram.com', 'i.instagram.com']
     start_urls = ['https://www.instagram.com/']
     _login_url = 'accounts/login/ajax/'
     tag_path = '/explore/tags/'
@@ -54,25 +55,19 @@ class InstagramLSpider(scrapy.Spider):
         script = response.xpath('//body/script[contains(text(), "window._sharedData =" )]/text()').extract_first()
         return json.loads(script.replace('window._sharedData = ', '')[:-1])
 
-    def pagination(self, response, js_data):
+    def pagination(self, response):
         try:
-            next_max_id = js_data['entry_data']['TagPage'][0]['data']['recent']['next_max_id']
-            next_page = js_data['entry_data']['TagPage'][0]['data']['recent']['next_page']
+            js_data = self.js_data_extract(response)
+            params = {
+                'max_id': js_data['entry_data']['TagPage'][0]['data']['recent']['next_max_id'],
+                'page': js_data['entry_data']['TagPage'][0]['data']['recent']['next_page']
+            }
             request_url = f'https://i.instagram.com/api/v1/tags/{response.meta["tag_name"]}/sections/'
-            yield scrapy.FormRequest(
-                request_url,
-                method='POST',
-                callback=self.post_parse,
-                formdata={
-                    'max_id': f'{next_max_id}',
-                    'page': str(next_page)
-                }
-            )
+            yield scrapy.Request(f"{request_url}?{urlencode(params)}", callback=self.post_parse)
         except AttributeError:
             print('It was last page')
 
     def post_parse(self, response):
-        yield from self.pagination(response, self.js_data_extract(response))
         js_data = self.js_data_extract(response)['entry_data']['TagPage'][0]['data']['recent']['sections']
         for item in js_data:
             for media in item['layout_content']['medias']:
@@ -80,3 +75,4 @@ class InstagramLSpider(scrapy.Spider):
                 post_loader.add_value('date_parse', datetime.now())
                 post_loader.add_value('data', media)
                 yield post_loader.load_item()
+        yield from self.pagination(response)
