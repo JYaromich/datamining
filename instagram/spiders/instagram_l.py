@@ -60,7 +60,9 @@ class InstagramLSpider(scrapy.Spider):
             js_data = self.js_data_extract(response)
             params = {
                 'max_id': js_data['entry_data']['TagPage'][0]['data']['recent']['next_max_id'],
-                'page': js_data['entry_data']['TagPage'][0]['data']['recent']['next_page']
+                'page': js_data['entry_data']['TagPage'][0]['data']['recent']['next_page'],
+                'surface': 'grid',
+                'tab': 'recent'
             }
             request_url = f'https://i.instagram.com/api/v1/tags/{response.meta["tag_name"]}/sections/'
             yield scrapy.Request(f"{request_url}?{urlencode(params)}", callback=self.post_parse)
