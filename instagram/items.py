@@ -13,9 +13,9 @@ class TagInstagramItem(scrapy.Item):
 
     date_parse = Field()
     data = Field()
-    pass
 
 
 class PostInstagramItem(scrapy.Item):
     date_parse = Field()
     data = Field()
+    photos = Field()

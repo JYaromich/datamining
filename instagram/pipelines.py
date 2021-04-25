@@ -4,14 +4,16 @@
 # See: https://docs.scrapy.org/en/latest/topics/item-pipeline.html
 
 
-# useful for handling different item types with a single interface
-from itemadapter import ItemAdapter
-
 import pymongo
+# useful for handling different item types with a single interface
+import scrapy
+from itemadapter import ItemAdapter
+from scrapy.pipelines.images import ImagesPipeline
+
 from instagram.items import TagInstagramItem, PostInstagramItem
 
 
-class InstagramPipeline:
+class SaveMongoPipeline:
     def process_item(self, item, spider):
         if isinstance(item, TagInstagramItem):
             return self._save_tag(item)
@@ -29,6 +31,20 @@ class InstagramPipeline:
         collection.insert_one(ItemAdapter(item).asdict())
         return item
 
-class SaveImagePipeline:
-    #TODO: create class to save post inage
-    pass
+
+class SaveImagePipeline(ImagesPipeline):
+    def get_media_requests(self, item, info):
+        if isinstance(item, PostInstagramItem):
+            if item['data']['media'].get('image_versions2'):
+                print(item['data']['media']['image_versions2']['candidates'][0]['url'])
+                yield scrapy.Request(item['data']['media']['image_versions2']['candidates'][0]['url'])
+            if item['data']['media'].get('carousel_media'):
+                for itm in item['data']['media']['carousel_media']:
+                    yield scrapy.Request(itm['image_versions2']['candidates'][0]['url'])
+
+
+
+    def item_completed(self, results, item, info):
+        if 'photos' in item:
+            item['photos'] = [itm[1] for itm in results]
+        return item

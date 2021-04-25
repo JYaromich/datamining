@@ -39,7 +39,9 @@ COOKIES_ENABLED = True
 DEFAULT_REQUEST_HEADERS = {
     'Accept': '*/*',
     'Accept-Language': 'ru',
-    'Content-Type': 'application/x-www-form-urlencoded'
+    'Content-Type': 'application/x-www-form-urlencoded',
+    'Accept-Encoding': 'gzip, deflate, br',
+    'Connection': 'keep-alive'
 }
 
 # Enable or disable spider middlewares
@@ -63,8 +65,11 @@ DEFAULT_REQUEST_HEADERS = {
 # Configure item pipelines
 # See https://docs.scrapy.org/en/latest/topics/item-pipeline.html
 ITEM_PIPELINES = {
-    'instagram.pipelines.InstagramPipeline': 300,
+    # 'instagram.pipelines.SaveImagePipeline': 200,
+    'instagram.pipelines.SaveMongoPipeline': 300
 }
+
+IMAGES_STORE = 'images'
 
 # Enable and configure the AutoThrottle extension (disabled by default)
 # See https://docs.scrapy.org/en/latest/topics/autothrottle.html

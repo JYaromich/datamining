@@ -15,4 +15,4 @@ class TagInstagramLoader(ItemLoader):
 
 class PostInstagramLoader(ItemLoader):
     date_parse_out = TakeFirst()
-    data_out = Identity()
+    data_out = TakeFirst()

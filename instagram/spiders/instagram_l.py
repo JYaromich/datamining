@@ -64,8 +64,10 @@ class InstagramLSpider(scrapy.Spider):
                 'surface': 'grid',
                 'tab': 'recent'
             }
-            request_url = f'https://i.instagram.com/api/v1/tags/{response.meta["tag_name"]}/sections/'
-            yield scrapy.Request(f"{request_url}?{urlencode(params)}", callback=self.post_parse)
+            request_url = f'https://i.instagram.com/api/v1/tags/{response.meta["tag_name"]}/sections'
+            request = scrapy.Request(f"{request_url}?{urlencode(params)}", method='POST', callback=self.post_parse)
+            request.headers = response.headers.copy()
+            yield request
         except AttributeError:
             print('It was last page')
 
