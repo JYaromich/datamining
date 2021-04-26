@@ -24,12 +24,12 @@ class SaveMongoPipeline:
     def _save_tag(self, item):
         collection = pymongo.MongoClient('mongodb://localhost')['instagram_datamining']['tags']
         collection.insert_one(ItemAdapter(item).asdict())
-        return item
+        # return item
 
     def _save_post(self, item):
         collection = pymongo.MongoClient('mongodb://localhost')['instagram_datamining']['posts']
         collection.insert_one(ItemAdapter(item).asdict())
-        return item
+        # return item
 
 
 class SaveImagePipeline(ImagesPipeline):

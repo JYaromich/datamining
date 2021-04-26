@@ -10,7 +10,9 @@ from loader import TagInstagramLoader, PostInstagramLoader
 
 class InstagramLSpider(scrapy.Spider):
     name = 'instagram_l'
-    allowed_domains = ['www.instagram.com', 'i.instagram.com']
+    allowed_domains = ['www.instagram.com',
+                       'i.instagram.com'
+                       ]
     start_urls = ['https://www.instagram.com/']
     _login_url = 'accounts/login/ajax/'
     tag_path = '/explore/tags/'
@@ -19,11 +21,13 @@ class InstagramLSpider(scrapy.Spider):
         self.login = login
         self.password = password
         self.tags = tags
+        self.token = dict()
         super().__init__(*args, **kwargs)
 
-    def parse(self, response):
+    def parse(self, response, **kwargs):
         try:
             js_data = self.js_data_extract(response)
+            self.token = {'X-CSRFToken': js_data['config']['csrf_token']}
             yield scrapy.FormRequest(
                 response.urljoin(self._login_url),
                 method='POST',
@@ -32,8 +36,7 @@ class InstagramLSpider(scrapy.Spider):
                     'username': self.login,
                     'enc_password': self.password
                 },
-                headers={'X-CSRFToken': js_data['config']['csrf_token']}
-            )
+                headers=self.token)
         except AttributeError:
             if response.json()['authenticated']:
                 for tag in self.tags:
@@ -65,7 +68,12 @@ class InstagramLSpider(scrapy.Spider):
                 'tab': 'recent'
             }
             request_url = f'https://i.instagram.com/api/v1/tags/{response.meta["tag_name"]}/sections'
-            request = scrapy.Request(f"{request_url}?{urlencode(params)}", method='POST', callback=self.post_parse)
+            request = scrapy.Request(
+                f"{request_url}?{urlencode(params)}",
+                method='POST',
+                callback=self.post_parse,
+                headers=self.token
+            )
             yield request
         except AttributeError:
             print('It was last page')
